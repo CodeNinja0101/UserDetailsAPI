@@ -3,6 +3,7 @@ package com.example.UserDetailsAPI.controller;
 import com.example.UserDetailsAPI.model.User;
 import com.example.UserDetailsAPI.service.UserService;
 import com.example.UserDetailsAPI.service.UserServiceImpl;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,22 +25,25 @@ public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @PostMapping("create/user")
-    public ResponseEntity<User> createUser(@RequestBody User user) {
+    public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
+        logger.info("Creating new user: {}", user);
         User newUser = userService.createUser(user);
+        logger.info("User created successfully with ID: {}", newUser.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<Optional<Object>> getUserById(@PathVariable int id) {
+        logger.info("Fetching user by ID: {}", id);
         Optional<User> existingUser = userService.getUserById(id);
         if (existingUser.isPresent()) {
+            logger.info("User found: {}", existingUser.get());
             return ResponseEntity.ok(Optional.of(existingUser));
         } else {
+            logger.warn("User not found with ID: {}", id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Optional.of("User not found with Id: " + id));
         }
     }
-
 
     @GetMapping()
     public List<User> getAllUsers() {
@@ -49,7 +53,7 @@ public class UserController {
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateUserDetails(@PathVariable int id, @RequestBody User user) {
+    public ResponseEntity<?> updateUserDetails(@PathVariable int id, @Valid @RequestBody User user) {
         Optional<User> updatedUser = userService.updateUserDetails(id, user);
         if (updatedUser.isPresent()) {
             return ResponseEntity.ok(updatedUser.get());
